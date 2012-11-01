@@ -1161,6 +1161,10 @@ static int s3c_udc_probe(struct platform_device *pdev)
 	unsigned int irq;
 	int retval;
 
+	if (!pdev) {
+		pr_err("%s: pdev is null\n", __func__);
+		return -EINVAL;
+	}
 	DEBUG("%s: %p\n", __func__, pdev);
 
 	pdata = pdev->dev.platform_data;

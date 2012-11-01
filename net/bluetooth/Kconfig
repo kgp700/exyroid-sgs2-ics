@@ -56,8 +56,12 @@ config BT_SCO
 	  SCO link provides voice transport over Bluetooth.  SCO support is
 	  required for voice applications like Headset and Audio.
 
+config BT_LIMITED_ESCO
+	bool "BT_LIMITED_ESCO"
+	help
+	  U1_LGU
 endif
-
+	  
 source "net/bluetooth/rfcomm/Kconfig"
 
 source "net/bluetooth/bnep/Kconfig"

@@ -113,12 +113,13 @@ static const struct m5mo_frmsizeenum preview_frmsizes[] = {
 };
 
 static const struct m5mo_frmsizeenum capture_frmsizes[] = {
-	{ M5MO_CAPTURE_VGA,	640,	480,	0x09 },
-	{ M5MO_CAPTURE_WVGA,	800,	480,	0x0A },
-	{ M5MO_CAPTURE_W2MP,	2048,	1232,	0x2C },
-	{ M5MO_CAPTURE_3MP,	2048,	1536,	0x1B },
-	{ M5MO_CAPTURE_W7MP,	3264,	1968,	0x2D },
-	{ M5MO_CAPTURE_8MP,	3264,	2448,	0x25 },
+	{ M5MO_CAPTURE_VGA,  640,	480,	0x09 },
+	{ M5MO_CAPTURE_WVGA, 800,	480,	0x0A },
+	{ M5MO_CAPTURE_SXGA, 1280,	960,	0x14 },
+	{ M5MO_CAPTURE_W2MP, 2048,	1232,	0x2C },
+	{ M5MO_CAPTURE_3MP,  2048,	1536,	0x1B },
+	{ M5MO_CAPTURE_W7MP, 3264,	1968,	0x2D },
+	{ M5MO_CAPTURE_8MP,  3264,	2448,	0x25 },
 };
 
 static struct m5mo_control m5mo_ctrls[] = {
@@ -1559,7 +1560,9 @@ static int m5mo_set_af(struct v4l2_subdev *sd, int val)
 static int m5mo_set_af_mode(struct v4l2_subdev *sd, int val)
 {
 	struct m5mo_state *state = to_state(sd);
+#ifndef CONFIG_MACH_S2PLUS
 	struct regulator *movie = regulator_get(NULL, "led_movie");
+#endif
 	u32 cancel, mode, status = 0;
 	int i, err;
 
@@ -1622,10 +1625,12 @@ retry:
 		CHECK_ERR(err);
 	}
 
+#ifndef CONFIG_MACH_S2PLUS
 	if (val == FOCUS_MODE_MACRO)
 		regulator_set_current_limit(movie, 15000, 17000);
 	else if (state->focus.mode == FOCUS_MODE_MACRO)
 		regulator_set_current_limit(movie, 90000, 110000);
+#endif
 
 	state->focus.mode = val;
 

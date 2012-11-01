@@ -3354,8 +3354,8 @@ static int __devinit mxt224_probe(struct i2c_client *client,
 		data->atchcalsthr_e = pdata->atchcalsthr_e;
 		data->noise_suppression_cfg = pdata->t48_config_batt_e + 1;
 		data->noise_suppression_cfg_ta = pdata->t48_config_chrg_e + 1;
-		data->tchthr_batt_e= pdata->tchthr_batt_e;
-		data->tchthr_charging_e= pdata->tchthr_charging_e;
+		data->tchthr_batt_e = pdata->tchthr_batt_e;
+		data->tchthr_charging_e = pdata->tchthr_charging_e;
 		data->calcfg_batt_e = pdata->calcfg_batt_e;
 		data->calcfg_charging_e = pdata->calcfg_charging_e;
 		data->atchfrccalthr_e = pdata->atchfrccalthr_e;
@@ -3673,7 +3673,7 @@ static int __devinit mxt224_probe(struct i2c_client *client,
 #endif
 
 #ifdef CONFIG_HAS_EARLYSUSPEND
-#if defined(CONFIG_TARGET_LOCALE_NA) || defined(CONFIG_TARGET_LOCALE_NAATT)
+#if defined(CONFIG_TARGET_LOCALE_NA) || defined(CONFIG_TARGET_LOCALE_NAATT) || defined(CONFIG_TARGET_LOCALE_KOR)
 	data->early_suspend.level = EARLY_SUSPEND_LEVEL_DISABLE_FB + 1;
 #else
 	data->early_suspend.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN + 1;

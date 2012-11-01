@@ -343,6 +343,11 @@ static int exynos4_pm_prepare(void)
 	ret = regulator_suspend_prepare(PM_SUSPEND_MEM);
 #endif
 
+#ifdef CONFIG_CACHE_L2X0
+	/* Disable the full line of zero */
+	disable_cache_foz();
+#endif
+
 	return ret;
 }
 
@@ -548,6 +553,11 @@ static void exynos4_pm_resume(void)
 	/* enable L2X0*/
 	writel_relaxed(1, S5P_VA_L2CC + L2X0_CTRL);
 #endif
+#endif
+
+#ifdef CONFIG_CACHE_L2X0
+	/* Enable the full line of zero */
+	enable_cache_foz();
 #endif
 
 early_wakeup:

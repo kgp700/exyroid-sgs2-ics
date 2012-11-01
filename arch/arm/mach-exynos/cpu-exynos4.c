@@ -18,6 +18,7 @@
 #include <asm/proc-fns.h>
 #include <asm/hardware/cache-l2x0.h>
 #include <asm/hardware/gic.h>
+#include <asm/cacheflush.h>
 
 #include <plat/cpu.h>
 #include <plat/clock.h>
@@ -392,6 +393,8 @@ static int __init exynos4_l2x0_cache_init(void)
 	outer_cache.set_debug = exynos4_l2x0_set_debug;
 #endif
 
+	/* Enable the full line of zero */
+	enable_cache_foz();
 	return 0;
 }
 
@@ -409,6 +412,11 @@ static void exynos4_sw_reset(void)
 	}
 }
 
+static void __iomem *exynos4_pmu_init_zero[] = {
+	S5P_CMU_RESET_ISP_SYS,
+	S5P_CMU_SYSCLK_ISP_SYS,
+};
+
 int __init exynos4_init(void)
 {
 	unsigned int value;
@@ -419,6 +427,14 @@ int __init exynos4_init(void)
 
 	/* set idle function */
 	pm_idle = exynos4_idle;
+
+	/*
+	 * on exynos4x12, CMU reset system power register should to be set 0x0
+	 */
+	if (!soc_is_exynos4210()) {
+		for (i = 0; i < ARRAY_SIZE(exynos4_pmu_init_zero); i++)
+			__raw_writel(0x0, exynos4_pmu_init_zero[i]);
+	}
 
 	/* set sw_reset function */
 	s5p_reset_hook = exynos4_sw_reset;

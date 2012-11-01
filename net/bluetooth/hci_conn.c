@@ -365,8 +365,20 @@ struct hci_conn *hci_conn_add(struct hci_dev *hdev, int type,
 		if (!pkt_type)
 			pkt_type = SCO_ESCO_MASK;
 	case ESCO_LINK:
-		if (!pkt_type)
+		if (!pkt_type) {
+/*
+MARKET ISSUE
+The packet types(ESCO_3EV3 | ESCO_2EV5 | ESCO_3EV5) are not supported by broadcom code of GB.
+But ICS supports all packet types of ECSO. Sometimes sound is not good during in call.
+I suggest this solution that not support to ESCO_3EV3, ESCO_2EV5, ESCO_3EV5.
+*/
+#ifdef CONFIG_BT_LIMITED_ESCO 
+			pkt_type = (SCO_ESCO_MASK | ESCO_EV3 | ESCO_EV4 | ESCO_EV5 | ESCO_2EV3);
+#else			
 			pkt_type = ALL_ESCO_MASK;
+#endif        
+		}
+
 		if (lmp_esco_capable(hdev)) {
 			/* HCI Setup Synchronous Connection Command uses
 			   reverse logic on the EDR_ESCO_MASK bits */
@@ -547,7 +559,8 @@ struct hci_conn *hci_connect(struct hci_dev *hdev, int type,
 
 	if (acl->state == BT_OPEN || acl->state == BT_CLOSED) {
 		ie = hci_inquiry_cache_lookup(acl->hdev, &acl->dst);
-		if (ie && (!ie->data.ssp_mode || !acl->hdev->ssp_mode)) {
+		if (ie && (!ie->data.ssp_mode || !acl->hdev->ssp_mode) &&
+				((ie->data.dev_class[1] & 0x1f) != 0x05)) {
 			__u8 auth = AUTH_ENABLED;
 			hci_send_cmd(hdev, HCI_OP_WRITE_AUTH_ENABLE, 1, &auth);
 		}

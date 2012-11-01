@@ -49,6 +49,10 @@ extern void dhdsdio_isr(void * args);
 #include <dhd.h>
 #endif /* defined(OOB_INTR_ONLY) */
 
+#if defined(CONFIG_PM_SLEEP) && defined(CUSTOMER_HW_SLP)
+/*SLP_wakelock_alternative_code*/
+struct device *pm_dev;
+#endif /* CONFIG_PM_SLEEP && CUSTOMER_HW_SLP */
 /**
  * SDIO Host Controller info
  */
@@ -147,17 +151,6 @@ static int __devexit bcmsdh_remove(struct device *dev);
 #endif /* BCMLXSDMMC */
 
 #ifndef BCMLXSDMMC
-static struct device_driver bcmsdh_driver = {
-	.name		= "pxa2xx-mci",
-	.bus		= &platform_bus_type,
-	.probe		= bcmsdh_probe,
-	.remove		= bcmsdh_remove,
-	.suspend	= NULL,
-	.resume		= NULL,
-	};
-#endif /* BCMLXSDMMC */
-
-#ifndef BCMLXSDMMC
 static
 #endif /* BCMLXSDMMC */
 int bcmsdh_probe(struct device *dev)
@@ -173,6 +166,9 @@ int bcmsdh_probe(struct device *dev)
 	int irq = 0;
 	uint32 vendevid;
 	unsigned long irq_flags = 0;
+#if defined(CONFIG_PM_SLEEP) && defined(CUSTOMER_HW_SLP)
+	int ret = 0;
+#endif /* CONFIG_PM_SLEEP && CUSTOMER_HW_SLP */
 
 #if !defined(BCMLXSDMMC) && defined(BCMPLATFORM_BUS)
 	pdev = to_platform_device(dev);
@@ -239,6 +235,12 @@ int bcmsdh_probe(struct device *dev)
 	sdhc->next = sdhcinfo;
 	sdhcinfo = sdhc;
 
+#if defined(CONFIG_PM_SLEEP) && defined(CUSTOMER_HW_SLP)
+	/*SLP_wakelock_alternative_code*/
+	pm_dev=sdhc->dev;
+	ret = device_init_wakeup(pm_dev, 1);
+	printf("%s : device_init_wakeup(pm_dev) enable, ret = %d\n", __func__, ret);
+#endif /* CONFIG_PM_SLEEP && CUSTOMER_HW_SLP */
 	/* Read the vendor/device ID from the CIS */
 	vendevid = bcmsdh_query_device(sdh);
 	/* try to attach to the target device */
@@ -272,6 +274,11 @@ int bcmsdh_remove(struct device *dev)
 	osl_t *osh;
 
 	sdhc = sdhcinfo;
+#if defined(CONFIG_PM_SLEEP) && defined(CUSTOMER_HW_SLP)
+	/*SLP_wakelock_alternative_code*/
+	device_init_wakeup(pm_dev, 0);
+	printf("%s : device_init_wakeup(pm_dev) disable\n", __func__);
+#endif /* CONFIG_PM_SLEEP && CUSTOMER_HW_SLP */
 	drvinfo.detach(sdhc->ch);
 	bcmsdh_detach(sdhc->osh, sdhc->sdh);
 
@@ -523,6 +530,24 @@ bcmsdh_pci_remove(struct pci_dev *pdev)
 
 extern int sdio_function_init(void);
 
+extern int sdio_func_reg_notify(void* semaphore);
+extern void sdio_func_unreg_notify(void);
+
+#if defined(BCMLXSDMMC)
+int bcmsdh_reg_sdio_notify(void* semaphore)
+{
+
+	return sdio_func_reg_notify(semaphore);
+
+}
+
+void bcmsdh_unreg_sdio_notify(void)
+{
+	sdio_func_unreg_notify();
+
+}
+#endif /* defined(BCMLXSDMMC) */
+
 int
 bcmsdh_register(bcmsdh_driver_t *driver)
 {
@@ -531,13 +556,8 @@ bcmsdh_register(bcmsdh_driver_t *driver)
 	drvinfo = *driver;
 
 #if defined(BCMPLATFORM_BUS)
-#if defined(BCMLXSDMMC)
 	SDLX_MSG(("Linux Kernel SDIO/MMC Driver\n"));
 	error = sdio_function_init();
-#else
-	SDLX_MSG(("Intel PXA270 SDIO Driver\n"));
-	error = driver_register(&bcmsdh_driver);
-#endif /* defined(BCMLXSDMMC) */
 	return error;
 #endif /* defined(BCMPLATFORM_BUS) */
 
@@ -565,14 +585,12 @@ bcmsdh_unregister(void)
 	if (bcmsdh_pci_driver.node.next)
 #endif
 
-#if defined(BCMPLATFORM_BUS) && !defined(BCMLXSDMMC)
-		driver_unregister(&bcmsdh_driver);
-#endif
 #if defined(BCMLXSDMMC)
 	sdio_function_cleanup();
 #endif /* BCMLXSDMMC */
+
 #if !defined(BCMPLATFORM_BUS) && !defined(BCMLXSDMMC)
-		pci_unregister_driver(&bcmsdh_pci_driver);
+	pci_unregister_driver(&bcmsdh_pci_driver);
 #endif /* BCMPLATFORM_BUS */
 }
 
@@ -638,12 +656,6 @@ int bcmsdh_register_oob_intr(void * dhdp)
 	return 0;
 }
 
-void *bcmsdh_get_drvdata(void)
-{
-	if (!sdhcinfo)
-		return NULL;
-	return dev_get_drvdata(sdhcinfo->dev);
-}
 void bcmsdh_set_irq(int flag)
 {
 	if (sdhcinfo->oob_irq_registered && sdhcinfo->oob_irq_enable_flag != flag) {
@@ -668,6 +680,15 @@ void bcmsdh_unregister_oob_intr(void)
 		free_irq(sdhcinfo->oob_irq, NULL);
 		sdhcinfo->oob_irq_registered = FALSE;
 	}
+}
+#endif /* defined(OOB_INTR_ONLY) */
+
+#if defined(BCMLXSDMMC)
+void *bcmsdh_get_drvdata(void)
+{
+	if (!sdhcinfo)
+		return NULL;
+	return dev_get_drvdata(sdhcinfo->dev);
 }
 #endif /* defined(OOB_INTR_ONLY) */
 

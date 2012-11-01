@@ -650,6 +650,8 @@ struct signal_struct {
 	int oom_score_adj_min;	/* OOM kill score adjustment minimum value.
 				 * Only settable by CAP_SYS_RESOURCE. */
 
+	int oom_killed;    /* 1 means for a task to have a SIGKILL signal.*/
+
 	struct mutex cred_guard_mutex;	/* guard against foreign influences on
 					 * credential calculations
 					 * (notably. ptrace) */

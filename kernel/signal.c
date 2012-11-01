@@ -1034,6 +1034,10 @@ static int __send_signal(int sig, struct siginfo *info, struct task_struct *t,
 	}
 
 out_set:
+	if (sig==SIGKILL) {
+		t->signal->oom_killed = 1;
+	}
+
 	signalfd_notify(t, sig);
 	sigaddset(&pending->signal, sig);
 	complete_signal(sig, t, group);
