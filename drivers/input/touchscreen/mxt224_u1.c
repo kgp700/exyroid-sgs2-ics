@@ -199,7 +199,7 @@ struct mxt224_data {
 	bool enabled;
 };
 
-#define CLEAR_MEDIAN_FILTER_ERROR
+#undef CLEAR_MEDIAN_FILTER_ERROR
 struct mxt224_data *copy_data;
 int touch_is_pressed;
 EXPORT_SYMBOL(touch_is_pressed);
