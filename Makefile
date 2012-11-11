@@ -369,7 +369,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
-		   -mtune=cortex-a9 -march=armv7-a -mfpu=neon -mfloat-abi=softfp \
+		   -mtune=cortex-a9 -march=armv7-a -mfpu=neon -mfloat-abi=hard \
 		   -fno-gcse -mvectorize-with-neon-quad -ftree-vectorize -fsingle-precision-constant -funswitch-loops \
 		   -fprofile-correction -funsafe-math-optimizations -fipa-cp-clone \
 		   -fgraphite -fgraphite-identity -floop-interchange -floop-strip-mine \
