@@ -46,8 +46,8 @@
 #endif
 
 #if defined(CONFIG_MACH_U1) || defined(CONFIG_MACH_PX)
-#define TRANS_LOAD_H0 30
-#define TRANS_LOAD_L1 20
+#define TRANS_LOAD_H0 60
+#define TRANS_LOAD_L1 50
 #define TRANS_LOAD_H1 100
 #endif
 
@@ -612,6 +612,13 @@ static int __init exynos4_pm_hotplug_device_init(void)
 {
 	int ret;
 
+#if defined(CONFIG_CPU_FREQ_DEFAULT_GOV_PEGASUSQ) || \
+	defined(CONFIG_CPU_FREQ_DEFAULT_GOV_HOTPLUG) || \
+	defined(CONFIG_CPU_FREQ_DEFAULT_GOV_LULZACTIVEQ)
+	standhotplug_enabled = 0;
+#else
+	standhotplug_enabled = 1;
+#endif
 	ret = platform_device_register(&exynos4_pm_hotplug_device);
 
 	if (ret) {
