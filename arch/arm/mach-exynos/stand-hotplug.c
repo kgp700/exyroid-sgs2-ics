@@ -46,8 +46,8 @@
 #endif
 
 #if defined(CONFIG_MACH_U1) || defined(CONFIG_MACH_PX)
-#define TRANS_LOAD_H0 60
-#define TRANS_LOAD_L1 50
+#define TRANS_LOAD_H0 50
+#define TRANS_LOAD_L1 40
 #define TRANS_LOAD_H1 100
 #endif
 
@@ -75,7 +75,7 @@
 
 #define HOTPLUG_UNLOCKED 0
 #define HOTPLUG_LOCKED 1
-#define PM_HOTPLUG_DEBUG 1
+#define PM_HOTPLUG_DEBUG 0
 #define NUM_CPUS num_possible_cpus()
 #define CPULOAD_TABLE (NR_CPUS + 1)
 
@@ -88,6 +88,7 @@ static struct delayed_work hotplug_work;
 
 static unsigned int max_performance;
 static unsigned int freq_min = -1UL;
+module_param_named(freq_min, freq_min, uint, 0644);
 
 static unsigned int hotpluging_rate = CHECK_DELAY;
 module_param_named(rate, hotpluging_rate, uint, 0644);
@@ -251,6 +252,11 @@ static void hotplug_timer(struct work_struct *work)
 	enum flag flag_hotplug;
 
 	mutex_lock(&hotplug_lock);
+
+	if(!standhotplug_enabled) {
+		printk(KERN_INFO "pm-hotplug: disable cpu auto-hotplug\n");
+		goto off_hotplug;
+	}
 
 	// exit if we turned off dynamic hotplug by tegrak
 	// cancel the timer
