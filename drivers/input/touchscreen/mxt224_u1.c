@@ -476,6 +476,7 @@ static void mxt224_ta_probe(bool ta_status)
 	}
 
 	if (copy_data->family_id == 0x81) {
+
 #ifdef CLEAR_MEDIAN_FILTER_ERROR
 		if (!ta_status) {
 			ret =
@@ -483,6 +484,8 @@ static void mxt224_ta_probe(bool ta_status)
 					    TOUCH_MULTITOUCHSCREEN_T9,
 					    &size_one, &obj_address);
 			size_one = 1;
+
+
 			/*blen */
 			value = copy_data->blen_batt_e;
 			register_address = 6;
@@ -509,6 +512,7 @@ static void mxt224_ta_probe(bool ta_status)
 				  size_one, &value);
 		}
 #endif
+
 
 		value = copy_data->actvsyncsperx_e;
 		ret =
@@ -1501,6 +1505,7 @@ static void median_err_setting(void)
 		switch (copy_data->gErrCondition) {
 		case ERR_RTN_CONDITION_T9:
 			{
+#if 0
 				ret =
 				    get_object_info(copy_data,
 						    TOUCH_MULTITOUCHSCREEN_T9,
@@ -1514,18 +1519,19 @@ static void median_err_setting(void)
 				value = 80;
 				write_mem(copy_data, obj_address + 13, 1,
 					  &value);
+#endif
 				ret |=
 				    get_object_info(copy_data,
 						    SPT_CTECONFIG_T46,
 						    &size_one, &obj_address);
-				value = 32;
+				value = 48;  /* 32;*/
 				write_mem(copy_data, obj_address + 3, 1,
 					  &value);
 				ret |=
 				    get_object_info(copy_data,
 						    PROCG_NOISESUPPRESSION_T48,
 						    &size_one, &obj_address);
-				value = 29;
+				value = 20; /*29;*/
 				write_mem(copy_data, obj_address + 3, 1,
 					  &value);
 				value = 1;
@@ -1534,16 +1540,16 @@ static void median_err_setting(void)
 				value = 2;
 				write_mem(copy_data, obj_address + 9, 1,
 					  &value);
-				value = 100;
+				value = 64; /*100;*/
 				write_mem(copy_data, obj_address + 17, 1,
 					  &value);
 				value = 64;
 				write_mem(copy_data, obj_address + 19, 1,
 					  &value);
-				value = 20;
+				value = 100; /*20;*/
 				write_mem(copy_data, obj_address + 22, 1,
 					  &value);
-				value = 38;
+				value = 100; /*38;*/
 				write_mem(copy_data, obj_address + 25, 1,
 					  &value);
 				value = 16;
@@ -1552,7 +1558,7 @@ static void median_err_setting(void)
 				value = 40;
 				write_mem(copy_data, obj_address + 35, 1,
 					  &value);
-				value = 80;
+				value = 81; /*80;*/
 				write_mem(copy_data, obj_address + 39, 1,
 					  &value);
 			}
@@ -1606,6 +1612,7 @@ static void median_err_setting(void)
 		value = 10;
 				write_mem(copy_data, obj_address + 3, 1,
 					  &value);
+
 				value = 0;	/* secondmf */
 				write_mem(copy_data, obj_address + 8, 1,
 					  &value);
@@ -1628,7 +1635,7 @@ static void median_err_setting(void)
 				    get_object_info(copy_data,
 						    SPT_CTECONFIG_T46,
 						    &size_one, &obj_address);
-				value = 63;	/* actvsyncsperx */
+				value = 53;	/* actvsyncsperx */
 				write_mem(copy_data, obj_address + 3, 1,
 					  &value);
 			}
@@ -1717,6 +1724,7 @@ static irqreturn_t mxt224_irq_thread(int irq, void *ptr)
 				}
 			}
 		}
+#if 0
 #ifdef CLEAR_MEDIAN_FILTER_ERROR
 		if ((msg[0] == 18) && (data->family_id == 0x81)) {
 			if ((msg[4] & 0x5) == 0x5) {
@@ -1746,6 +1754,8 @@ static irqreturn_t mxt224_irq_thread(int irq, void *ptr)
 			}
 		}
 #endif
+#endif
+
 		if (msg[0] > 1 && msg[0] < 12) {
 
 			if ((copy_data->touch_is_pressed_arr[msg[0] - 2] == 1)
